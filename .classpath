@@ -6,6 +6,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="lib" path="C:/Users/송철/OneDrive/바탕 화면/tool/gson-2.11.0.jar"/>
 	<classpathentry kind="lib" path="C:/Users/송철/OneDrive/바탕 화면/tool/jamod-1.2-SNAPSHOT.jar"/>
 	<classpathentry kind="lib" path="C:/Users/송철/OneDrive/바탕 화면/tool/mysql-connector-j-9.2.0/mysql-connector-j-9.2.0.jar"/>
