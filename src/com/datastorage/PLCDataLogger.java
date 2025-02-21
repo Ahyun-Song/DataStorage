@@ -3,38 +3,51 @@ package com.datastorage;
 import java.sql.Connection;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import net.wimpi.modbus.facade.ModbusTCPMaster;
+import net.wimpi.modbus.procimg.InputRegister;
 
 public class PLCDataLogger {
 	public static void main(String[] args) {
-		try {
-			ModbusConnector modbus = new ModbusConnector();
-			Connection conn = DatabaseManager.getConnection();
+		String plcIp = "192.168.10.200";
+		int plcPort = 502;
+		int startAddress = 0;
+		int numRegisters = 10;
 
-			Timestamp currentTime = Timestamp.valueOf(LocalDateTime.now());
+		while (true) {  // 주기적으로 실행
+			try {
+				ModbusTCPMaster master = new ModbusTCPMaster(plcIp, plcPort);
+				master.connect();
+				System.out.println("✅ PLC 연결 성공!");
 
-			// 건조 공정 데이터 읽기
-			double temperature = modbus.readRegister(1);
-			double humidity = modbus.readRegister(2);
-			DatabaseManager.saveDryData(conn, currentTime, temperature, humidity);
+				// PLC에서 데이터 읽기
+				InputRegister[] registers = master.readInputRegisters(startAddress, numRegisters);
 
-			// 페인트 공정 데이터 읽기
-			double paintAmount = modbus.readRegister(3);
-			double pressure = modbus.readRegister(4);
-			DatabaseManager.savePaintData(conn, currentTime, paintAmount, pressure);
+				double temperature = registers[0].toShort();
+				double humidity = registers[1].toShort();
+				double waterLevel = registers[2].toShort();
+				double viscosity = registers[3].toShort();
+				double pH = registers[4].toShort() / 100.0; // pH는 x100 스케일링
+				double voltage = registers[5].toShort();
+				double current = registers[6].toShort();
+				double paintPressure = registers[7].toShort() / 100.0;
+				double paintFlow = registers[8].toShort();
 
-			// 전착 공정 데이터 읽기
-			double waterLevel = modbus.readRegister(5);
-			double viscosity = modbus.readRegister(6);
-			double ph = modbus.readRegister(7);
-			double current = modbus.readRegister(8);
-			double voltage = modbus.readRegister(9);
-			DatabaseManager.saveElectroDepositionData(conn, currentTime, waterLevel, viscosity, ph, current, voltage);
+				// MySQL에 데이터 저장
+				try (Connection conn = DatabaseManager.getConnection()) {
+					Timestamp currentTime = Timestamp.valueOf(LocalDateTime.now());
 
-			conn.close();
-			System.out.println("데이터 저장 완료");
-		} catch (Exception e) {
-			System.out.println("데이터 저장 실패");
-			e.printStackTrace();
+					DatabaseManager.saveDryData(conn, currentTime, temperature, humidity);
+					DatabaseManager.savePaintData(conn, currentTime, paintFlow, paintPressure);
+					DatabaseManager.saveElectroDepositionData(conn, currentTime, waterLevel, viscosity, pH, current, voltage);
+
+					System.out.println("✅ PLC 데이터 저장 완료");
+				}
+
+				master.disconnect();
+				Thread.sleep(5000); // 5초마다 데이터 저장
+			} catch (Exception e) {
+				System.out.println("❌ PLC 통신 오류: " + e.getMessage());
+			}
 		}
 	}
 }
