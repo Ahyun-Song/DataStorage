@@ -41,7 +41,7 @@ public class PLCDataSaver {
 			conn.close();
 			master.disconnect();
 		} catch (Exception e) {
-			System.out.println("데이터 저장 실패!");
+			System.out.println("데이터 저장 실패");
 			e.printStackTrace();
 		}
 	}

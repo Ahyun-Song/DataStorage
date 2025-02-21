@@ -5,9 +5,9 @@ import net.wimpi.modbus.procimg.InputRegister;
 
 public class PLCReader {
 	public static void main(String[] args) {
-		String plcIp = "192.168.0.200"; // PLC의 IP 주소 (변경해야 함)
+		String plcIp = "192.168.0.200"; // PLC의 IP 주소
 		int plcPort = 502; // Modbus 기본 포트
-		int registerAddress = 0; // 읽어올 레지스터 주소 (PLC 설정에 따라 변경)
+		int registerAddress = 0; // 읽어올 레지스터 주소(PLC 설정에 따라 변경)
 
 		try {
 			// Modbus TCP 마스터 생성
